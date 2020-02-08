@@ -1,0 +1,14 @@
+﻿@model IEnumerable<Thesis.Models.CategoryPost>
+@using Thesis.Infrastructure
+
+<ul class="sidebar navbar-nav" style="background-color: darkgrey;">
+    @foreach (var category in Model)
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Index","Post", new { nameOfPostCategory = category.Name })">
+                <img src="@Url.CategoriesIconsPath(category.Icon)" />
+                <span>@category.Name</span>
+            </a>
+        </li>
+    }
+</ul>

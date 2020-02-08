@@ -1,0 +1,261 @@
+﻿@model Thesis.Models.Game
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "Detail";
+}
+
+@Html.Action("MenuCategoryGames")
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+
+        <!-- Modal for message -->
+        <div class="modal" id="sendMessage">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Wyślij wiadomość</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <label>Treść wiadomości</label>
+                        <textarea id="messageContent" class="form-control"></textarea>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" id="sendMessageButton" class="btn btn-primary" onclick="sendMessage()" data-dismiss="modal">Wyślij wiadomość</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Zamknij okno</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- Modal for message -->
+
+        <div class="row">
+            <div class="col text-center">
+                <!-- Change on carosel when relation with Photos table will happen-->
+                <img class="img-fluid" src="@Url.ImagesGamePath(Model.MainPicture)" />
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="nav flex-column nav-pills col-4 text-center" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">Informacje</a>
+                <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">Uzytkownik</a>
+                <a class="nav-link" id="v-pills-books-tab" data-toggle="pill" href="#v-pills-settings" role="tab" aria-controls="v-pills-settings" aria-selected="false">Gry do wymiany</a>
+                <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">Wiadomosci</a>
+                @*<a class="nav-link" id="v-pills-exchanges-tab" data-toggle="pill" href="#v-pills-exchanges" role="tab" aria-controls="v-pills-exchanges" aria-selected="false">Wymiany</a>*@
+
+                @if (Model.IsInObserver)
+                {
+                    <a class="nav-link btn btn-warning mt-2" href="@Url.Action("Index","Observe")">
+                        Przejdź do listy obserwowanych
+                    </a>
+                }
+                else
+                {
+                    <a class="nav-link btn btn-success mt-2" href="@Url.Action("AddToObserve", "Observe", new { id = Model.GameId })">
+                        Dodaj do obserwowanych
+                    </a>
+                }
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <button class="nav-link btn btn-dark mt-2" type="button" data-toggle="modal" data-target="#sendMessage">
+                       Wyślij wiadomość
+                    </button>
+                }
+            </div>
+            <div class="tab-content col-7" id="v-pills-tabContent">
+                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                    <ul class="list-group">
+                        <li class="list-group-item">Tytuł : <strong>@Model.Title</strong></li>
+                        <li class="list-group-item">Opis : <strong>@Model.Description</strong></li>
+                        <li class="list-group-item">Wydawca: <strong>@Model.Publisher</strong></li>
+                    </ul>
+                </div>
+                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                    <ul class="list-group">
+                        <li class="list-group-item">Imie: @( Model.User != null ? Model.User.UserInformation.FirstName : " " )</li>
+                        <li class="list-group-item">Nazwisko: @( Model.User != null ? Model.User.UserInformation.LastName : " " )</li>
+                        <li class="list-group-item">Telefon: @( Model.User != null ? Model.User.UserInformation.PhoneNumber : " " )</li>
+                        <li class="list-group-item">Email: @( Model.User != null ? Model.User.UserInformation.Email : " " )</li>
+                        <li class="list-group-item">Adres: @( Model.User != null ? Model.User.UserInformation.Adress : " " )</li>
+                    </ul>
+
+                </div>
+                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-books-tab">
+                    <ul class="list-group">
+                        @if (Model.GamesForExchange != null)
+                        {
+                            foreach (string game in Model.GamesForExchange.Split('|'))
+                            {
+                                <li class="list-group-item">@game</li>
+                            }
+                        }
+                    </ul>
+                </div>
+                <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">
+                    @Html.Action("QuestionsOfGame", Model)
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalSpamWarning" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Wykryty Spam</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Przykro nam, ale ten tekst jest podejrzany o bycie spamem proszę wprowadzić inny</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        $('#myTab a').on('click', function (e) {
+            e.preventDefault()
+
+            $(this).tab('show')
+        })
+
+        function giveQuestion()
+        {
+              $gameId = @Model.GameId;
+            $question = $('#questionTextArea').val();
+            if ($.trim($question))
+            {
+                $isSpam = false;
+
+                $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $question},
+                success: function (response)
+                {
+                    if (response == true)
+                        $isSpam = true;
+                },
+                });
+
+                if ($isSpam) {
+                    $('#modalSpamWarning').modal();
+                    return;
+                }
+
+                $.ajax({
+                type: "GET",
+                url: "/Game/AskQuestion",
+                data: { gameId: $gameId, question: $question},
+                success: function (result)
+                {
+                    $('#v-pills-messages').html(result);
+                },
+            });
+            }
+        }
+
+
+        function replyToQuestion(id) {
+            console.log('diuash');
+            console.log(id);
+
+            $questionId = id;
+            $reply = $('#input-' + $questionId).val();
+            if ($.trim($reply))
+            {
+                $isSpam = false;
+
+                $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $reply},
+                success: function (response)
+                {
+                    if (response == true)
+                        $isSpam = true;
+                },
+                });
+
+                console.log($isSpam);
+
+                if ($isSpam) {
+                    $('#modalSpamWarning').modal();
+                    return;
+                }
+
+
+
+                $.ajax({
+                    type: "GET",
+                    url: "/Game/ReplyToQuestion",
+                    data: { questionId: $questionId, reply: $reply },
+                    success: function (result) {
+                        $('#v-pills-messages').html(result);
+                    },
+                });
+            }
+        }
+
+        function sendMessage() {
+            //Take content from textArea
+            $messageContent = $('#messageContent').val();
+            if ($messageContent.trim().length > 0) {
+                //remove white spaces from begining and at the end
+                $messageContent = $.trim($messageContent);
+
+                $isSpam = false;
+
+                $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $messageContent},
+                success: function (response)
+                {
+                    if (response == true)
+                        $isSpam = true;
+                },
+                });
+
+
+                if ($isSpam) {
+                    $('#modalSpamWarning').modal();
+                    return;
+                }
+
+
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("SendMessage", "Message")',
+                    data: { content: $messageContent, userName: '@Model.User.UserName'},
+                    success: function (result)
+                    {
+                        if (result == 'OK')
+                            alert('Poprawnie wysłano wiadomość');
+                    },
+                });
+            }
+        }
+
+    </script>
+}

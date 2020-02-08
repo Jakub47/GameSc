@@ -1,0 +1,238 @@
+﻿@model Thesis.ViewModels.ManageCredentialsViewModel
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Proszę wypełnić dane</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Proszę wypełnić wszystkie dane (Imię,Nazwisko,Adres,Miasto,Kod pocztowy,Numer telefonu) aby móc dodać gre
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+
+
+        @if (ViewBag.Successfull != null)
+        {
+            <div class="alert alert-success" role="alert">
+                @ViewBag.Successfull
+            </div>
+        }
+
+        @if (!Html.ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" role="alert">
+                @Html.ValidationSummary("", new { @class = "text-danger" })
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-2 col-12 text-left">
+                <h3>Twoje dane</h3>
+            </div>
+            <div class="col-lg-10 col-12 text-right">
+                <div>
+                    <span id="loadingText" style="display:none;">
+                        <text>Trwa ładowanie obrazka</text>
+                        <img src="@Url.ImagesOtherPath("loader.gif")" width="32" height="32" />
+                    </span>
+                    @if (Model.User.MainPicture != null)
+                    {
+                        <img data-imgOption="0" class="img-fluid" id="mainImg" src="@Url.ImagesUserPath(Model.User.MainPicture)" width="64" />
+                    }
+                    else
+                    {
+                        <img data-imgOption="0" class="img-fluid" id="mainImg" src="@Url.ImagesUserPath("user.png")" />
+                    }
+                    <p id="newImageInfo" style="display:none; color:red;">W celu zapisu nowego obrazka klknij w przycisk zapisz</p>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-sm btn-primary" onclick="generateIcons1()"> Wygeneruj nowy obrazek sposobem 1</button>
+                        <button class="btn btn-sm btn-primary" onclick="generateIcons2()"> Wygeneruj nowy obrazek sposobem 2 </button>
+                        <button class="btn btn-sm btn-primary" onclick="generateIcons3()"> Wygeneruj nowy obrazek sposobem 3 </button>
+                    </div>
+                    <div class="col-12 mt-1">
+                        @using (@Html.BeginForm("SaveImage", "Manage", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                        {
+                            <input type="hidden" name="ImgOption" id="ImgOption" value="0" />
+                            <input type="file" name="file" id="postedFile" onchange="readURL(this)" />
+                            <button class="btn btn-sm btn-success">Zapisz obraz</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        @using (@Html.BeginForm("ChangeProfile", "Manage"))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    @Html.LabelFor(o => o.UserInformation.FirstName, "Imię:")
+                    @Html.TextBoxFor(o => o.UserInformation.FirstName, new { @class = "form-control", placeholder = "Imię" })
+                    @Html.ValidationMessageFor(o => o.UserInformation.FirstName)
+                </div>
+                <div class="col-md-6 mb-3">
+                    @Html.LabelFor(o => o.UserInformation.LastName, "Nazwisko:")
+                    @Html.TextBoxFor(o => o.UserInformation.LastName, new { @class = "form-control", placeholder = "Nazwisko" })
+                    @Html.ValidationMessageFor(o => o.UserInformation.LastName)
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-5 mb-3">
+                    @Html.LabelFor(o => o.UserInformation.Adress, "Adres")
+                    @Html.TextBoxFor(o => o.UserInformation.Adress, new { @class = "form-control", placeholder = "Ulica" })
+                    @Html.ValidationMessageFor(o => o.UserInformation.Adress)
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    @Html.LabelFor(o => o.UserInformation.Town, "Miasto")
+                    @Html.TextBoxFor(o => o.UserInformation.Town, new { @class = "form-control", placeholder = "Miasto" })
+                    @Html.ValidationMessageFor(o => o.UserInformation.Town)
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    @Html.LabelFor(o => o.UserInformation.PostCode, "Kod pocztowy")
+                    @Html.TextBoxFor(o => o.UserInformation.PostCode, new { @class = "form-control", placeholder = "Kod" })
+                    @Html.ValidationMessageFor(o => o.UserInformation.PostCode)
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    @Html.LabelFor(o => o.UserInformation.PhoneNumber, "Numer telefonu")
+                    @Html.TextBoxFor(o => o.UserInformation.PhoneNumber, new { @class = "form-control", placeholder = "Telefon" })
+                    @Html.ValidationMessageFor(o => o.UserInformation.PhoneNumber)
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    @Html.LabelFor(o => o.UserInformation.Email, "Adres e-mail")
+                    @Html.TextBoxFor(o => o.UserInformation.Email, new { @class = "form-control", placeholder = "E-mail" })
+                    @Html.ValidationMessageFor(o => o.UserInformation.Email)
+                </div>
+            </div>
+            <input type="submit" value="Potwierdź" class="submitLink btn btn-primary" />
+        }
+
+
+        <h2 style="margin-bottom: 30px; margin-top: 20px;">Zmiana hasła</h2>
+
+        @using (Html.BeginForm("ChangePassword", "Manage", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-row">
+                <div class="col-md-4 mb-3">
+                    @Html.LabelFor(o => o.ChangePasswordViewModel.OldPassword, "Obecne hasło:")
+                    @Html.PasswordFor(o => o.ChangePasswordViewModel.OldPassword, new { @class = "form-control", placeholder = "Obecne hasło" })
+                    @Html.ValidationMessageFor(o => o.ChangePasswordViewModel.OldPassword)
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    @Html.LabelFor(o => o.ChangePasswordViewModel.NewPassword, "Nowe hasło:")
+                    @Html.PasswordFor(o => o.ChangePasswordViewModel.NewPassword, new { @class = "form-control", placeholder = "Nowe hasło" })
+                    @Html.ValidationMessageFor(o => o.ChangePasswordViewModel.NewPassword)
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    @Html.LabelFor(o => o.ChangePasswordViewModel.ConfirmPassword, "Potwierdź hasło:")
+                    @Html.PasswordFor(o => o.ChangePasswordViewModel.ConfirmPassword, new { @class = "form-control", placeholder = "Wpisz ponownie nowe hasło" })
+                    @Html.ValidationMessageFor(o => o.ChangePasswordViewModel.ConfirmPassword)
+                </div>
+            </div>
+            <input type="submit" value="Zmień Hasło" class="submitLink btn btn-primary" />
+        }
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+    @if (ViewBag.errorMessage != null)
+    {
+        <script>
+            $('#exampleModal').modal('show');
+        </script>
+    }
+
+    <script>
+        var canShow = false;
+
+        $(function () {
+            $('.validation-summary-errors').find('li').text('Niepoprawne hasło');
+        });
+
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#loadingText').show();
+                    canShow = true;
+                    $('#mainImg').attr('src', e.target.result);
+                    $('#mainImg').data('imgOption', 4);
+                    $('#ImgOption').val(4);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function generateIcons1() {
+            $('#loadingText').show();
+            canShow = true;
+            $("#mainImg").attr("src", '/Image/NormalImage');
+            $('#mainImg').data('imgOption', 1);
+            $('#ImgOption').val(1);
+        }
+
+        function generateIcons2() {
+            $('#loadingText').show();
+            canShow = true;
+            $("#mainImg").attr("src", '/Image/SimpleImage');
+            $('#mainImg').data('imgOption', 2);
+            $('#ImgOption').val(2);
+        }
+
+        $('#mainImg').on("load", function () {
+            $('#loadingText').hide();
+            if (canShow)
+                $('#newImageInfo').show();
+        });
+
+
+
+        function generateIcons3() {
+            $('#loadingText').show();
+            canShow = true;
+            $("#mainImg").attr("src", '/Image/CustomImage');
+            $('#mainImg').data('imgOption', 3);
+            $('#ImgOption').val(3);
+        }
+
+    </script>
+}
+

@@ -1,0 +1,43 @@
+﻿@model IEnumerable<Thesis.Models.Question>
+@using Thesis.Infrastructure
+
+
+    @if (Model != null && Model.Count() > 0)
+    {
+        foreach (var question in Model.OrderBy(a => a.QuestionDate))
+        {
+            <div class="media">
+                <img class="mr-3" src="@Url.ImagesUserPath(question.Sender.MainPicture)" width="64" alt="Photo of user">
+                <div class="media-body">
+                    @question.QuestionContent
+
+                    @if (question.ReplyContent != String.Empty)
+                    {
+                        <div class="media mt-3">
+                            <img class="pr-3" src="@Url.ImagesUserPath(question.Game.User.MainPicture)" width="64" alt="Photo of user">
+                            <div class="media-body">
+                                @question.ReplyContent
+                            </div>
+                        </div>
+                    }
+                    else if (question.Game.User.UserName == User.Identity.Name)
+                    { 
+                        <input id="input-@question.QuestionId" type="text" class="form-control" placeholder="Napisz odpowiedź" />
+                        <button id="@question.QuestionId" onclick="replyToQuestion(this.id)" class="btn btn-block sendReply">Odpowiedz</button>
+                    }
+                </div>
+            </div>
+        }
+    }
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="row">
+            <div class="col-lg-9">
+                <textarea type="text" id="questionTextArea" class="form-control" rows="2" placeholder="Zadaj pytanie"></textarea>
+            </div>
+            <div class="col-lg-2 align-content-center">
+                <button class="btn btn-primary btn-block" onclick="giveQuestion()" id="questionButton">Zadaj pytanie</button>
+            </div>
+        </div>
+    }
+</div>

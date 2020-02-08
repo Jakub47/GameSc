@@ -1,0 +1,70 @@
+﻿@model  Thesis.ViewModels.EventCategoryViewModel
+
+@{
+    ViewBag.Title = "Edit Game Event";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+@section Styles
+{
+    <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/Content/dateTimepicker/jquery.datetimepicker.min.css" rel="stylesheet" />
+}
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <h2>Edytuj wydarzenie</h2>
+        </div>
+        <p class="text-danger"> [Po kliknięciu przycisku "Dodaj" nastąpi sprawdzenie czy dany tekst jest spamem więc prosi się o odczekanie chwili. Dodatkowo prosi się o nie wprowadzenie tytułu typu "Nowe leki" lub "Uwaga wygrałeś! W celu zgarnięcia nagrody udaj się pod link"]</p>
+        @Html.Partial("_GameEventData")
+    </div>
+</div>
+
+
+
+@section Scripts
+{
+    <script src="~/Content/dateTimepicker/jquery.datetimepicker.full.min.js"></script>
+    <script>
+        $(document).ready(function ()
+        {
+            $val = $('#dateOfEvent').val();
+            if ($val[0] == '0')
+                $val = new Date();
+
+
+            $('#dateOfEvent').datetimepicker({
+                value: '12.03.2013',
+                startDate: '+2019/05/01',
+                defaultDate: $val
+            });
+
+
+            $('#myform').on('submit', function (e)
+            {
+                $titleOfPost = $('#GamingEvent_Title').val();
+                $isSpam = false;
+
+                $.ajax({
+                    async: false,
+                    url: '@Url.Action("IsSpam", "Home")',
+                    data: { text: $titleOfPost},
+                    success: function (response)
+                    {
+                        if (response == true)
+                            $isSpam = true;
+                    },
+                });
+
+                if ($isSpam == true)
+                {
+                    $('#modal').modal();
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}
+
+

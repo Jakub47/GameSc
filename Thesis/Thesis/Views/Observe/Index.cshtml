@@ -1,0 +1,90 @@
+﻿@model Thesis.ViewModels.ObserverViewModel
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "Obserwowane";
+}
+
+@Html.Action("MenuCategoryGames", "Game")
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        @if (Model.ObservePosition.Count <= 0)
+        {
+            <div class="col-lg-9 align-middle" id="extra">
+                <div class="row"></div>
+                <div class="row m-2">
+                    <p id="koszyk-empty-message" class="text-center">
+                        Nic nie obserwujesz!
+                    </p>
+                </div>
+                <div class="row h-50"></div>
+            </div>
+        }
+        <div class="col-lg-9" id="main">
+            <div class="row">
+                @foreach (var element in Model.ObservePosition)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4" id="koszyk-wiersz-@element.Game.GameId">
+                        <div class="card h-100">
+                            <a href="@Url.Action("Detail", "Game", new { id = element.Game.GameId })">
+                                <img class="img-fluid" src="@Url.ImagesGamePath(element.Game.MainPicture)" />
+                            </a>
+                            <div class="card-body">
+                                <h4 class="card-title">
+                                    <a href="@Url.Action("Detail", "Game", new { id = element.Game.GameId })">
+                                        @element.Game.Title
+                                    </a>
+                                </h4>
+                                <h5>@element.Game.Publisher</h5>                            
+                            </div>
+
+                            <a class="usunZwierze" data-id="@element.Game.GameId" href="#">
+                                <div class="card-footer bg-secondary d-flex justify-content-center">
+                                    Usuń
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+                 <div class="col-md-12 text-center" id="CenaCalkowita">
+                        <a class="btn btn-outline-primary btn-lg m-2 text-capitalize" href="@Url.Action("Index", "Post")">Obserwuj dalej</a>
+                    </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+@section Scripts
+{
+    @System.Web.Optimization.Scripts.Render("~/bundles/jqueryAndjqueryUI")
+    <script type="text/javascript">
+        $(function () {
+            $(".usunZwierze").click(function () {
+                var $this = $(this);
+                var recordDoUsuniecia = $this.attr("data-id");
+                if (recordDoUsuniecia != '') {
+                    $.post("/Observe/DeleteFromObserve", { "GameId": recordDoUsuniecia }, function (respons) {
+                        if (respons.AmountOfDeletingItems == 0) {
+                            $('#koszyk-wiersz-' + respons.IdOfPosition).fadeOut('slow', function () {
+                                if (respons.ObserverAmount == 0) {
+                                    $('#koszyk-empty-message').removeClass("hidden");
+                                }
+                            });
+                        }
+                        else {
+                            $('#koszyk-ilosc-pozycji-' + respons.IdOfPosition).text(response.AmountOfDeletingItems);
+                        }
+                        if (respons.ObserverAmount == 0) {
+                            location.reload();
+                        }
+                        $('#observe-header-amount-elements').text(respons.ObserverAmount);
+                    });
+                    return false;
+                }
+            });
+        });
+    </script>
+}
+

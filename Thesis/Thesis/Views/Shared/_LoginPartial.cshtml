@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNet.Identity
+@using Thesis.Infrastructure
+
+@if (Request.IsAuthenticated)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+    {
+        @Html.AntiForgeryToken()
+        <a href="@Url.Action("Index", "Manage")" class="dropdown-item">
+            <img src="@Url.ImagesOtherPath("userEdit.svg")" class="mr-3" />Zmień dane
+        </a>
+        <a href="@Url.Action("Games", "Manage")" class="dropdown-item">
+            <img src="@Url.ImagesOtherPath("listOfGames.svg")" class="mr-3" /> Lista gier
+        </a>
+        <a href="@Url.Action("Events", "Manage")" class="dropdown-item">
+            <img src="@Url.ImagesOtherPath("eventList.svg")" class="mr-3" />Lista wydarzeń
+        </a>
+        <a href="@Url.Action("Post", "Manage")" class="dropdown-item">
+            <img src="@Url.ImagesOtherPath("postList.svg")" class="mr-3" />Lista postów
+        </a>
+        <a href="@Url.Action("MessagesOfUser", "Manage")" class="dropdown-item">
+            <img src="@Url.ImagesOtherPath("eventAdd.svg")" class="mr-3" />Wiadomości
+            @{string newMessages = Html.Action("NewMessages", "Message").ToString();}
+            @if (newMessages != "0")
+            {
+                <span class="badge badge-danger ml-4">@newMessages</span>
+            }
+        </a>
+        <a href="javascript:document.getElementById('logoutForm').submit()" class="dropdown-item">
+            <img src="@Url.ImagesOtherPath("logout.svg")" class="mr-3" />Wyloguj mnie
+        </a>
+    }
+}
+else
+{
+    <a href="@Url.Action("Register","Account")" id="" class="dropdown-item">
+        <img src="@Url.ImagesOtherPath("register.svg")" class="mr-3" />Rejestracja
+    </a>
+    <a href="@Url.Action("Login","Account")" id="loginLink" class="dropdown-item">
+        <img src="@Url.ImagesOtherPath("login.svg")" class="mr-3" />Zaloguj
+    </a>
+}

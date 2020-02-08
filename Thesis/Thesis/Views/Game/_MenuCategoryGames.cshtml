@@ -1,0 +1,23 @@
+﻿@model Thesis.ViewModels.GameCategoryMenuViewModel
+@using Thesis.Infrastructure
+
+<ul class="sidebar navbar-nav" style="background-color: darkgrey;">
+    @foreach (var category in Model.GamesCategory)
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Index","Game", new { nameOfGameCategory = category.Name })">
+                <img src="@Url.CategoriesIconsPath(category.Icon)" />
+                <span>@category.Name</span>
+            </a>
+        </li>
+    }
+        <li class="nav-item sticky-top">
+            @foreach (var game in Model.Games)
+            {
+                <a class="nav-link border border-primary text-center" style="background-color: white; color:black;" href="@Url.Action("Detail","Game", new { id = game.GameId})">
+                    <img src="@Url.ImagesGamePath(game.MainPicture)" class="img-fluid rounded" />
+                    <h5 class="font-italic mt-1 mb-0">@game.Title</h5>
+                </a>
+            }
+        </li>
+</ul>

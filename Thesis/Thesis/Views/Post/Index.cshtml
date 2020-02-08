@@ -1,0 +1,288 @@
+﻿@model Thesis.ViewModels.PostUserViewModel
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "Index";
+}
+
+@Html.Action("MenuCategoryPosts")
+
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        @Html.Partial("_ListOfPosts")
+    </div>
+</div>
+
+<div id="modalSpamWarning" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Wykryty Spam</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Przykro nam, ale ten tekst jest podejrzany o bycie spamem proszę wprowadzić inny</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <script>
+        function addComment(ele)
+        {
+            var $button = $(ele);
+            $id = $button.attr('id');
+            $content = "";
+            $isSpam = false;
+            if ($.isNumeric($id)) {
+                $textArea = $('#textArea-addComment-' + $id);
+                $content = $textArea.val();
+            }
+            else {
+                alert("Błąd");
+            }
+
+            $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $content},
+                success: function (response)
+                {
+                    if (response == true)
+                        $isSpam = true;
+                },
+            });
+
+            if ($isSpam) {
+                $('#modalSpamWarning').modal();
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/Post/AddComment",
+                data: { postId: $id, content: $content},
+                success: function (response)
+                {
+                    $('#collapseExample-' + $id).replaceWith(response);
+                    $('#collapseExample-' + $id).collapse('show');
+                    scrollToElement();
+
+                    //$('html, body').animate({
+                    //    scrollTop: parseInt($("#last").offset().top)
+                    //}, 2000);
+                },
+            });
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function scrollToElement()
+        {
+            await sleep(500);
+            var spanElement = document.getElementById("lastElement");
+            spanElement.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+
+
+            var element = spanElement.nextSibling.nextSibling;
+
+            var originalColor = getComputedStyle(element).backgroundColor; // Store original color (red)
+
+            $jqueryElement = $(element);
+
+            $jqueryElement.css({ "background-color": "#fff596", "transition": "background-color 0.5s ease" });
+
+            setTimeout(function () {
+                $jqueryElement.css("background-color", originalColor);
+            }, 3000);
+
+        }
+
+        async function scrollToElementComment(id) {
+            await sleep(500);
+            var spanElement = document.getElementById('commentDiv-' + id);
+            //Tutaj skończyłem
+
+            var nodes = spanElement.querySelectorAll(".media-body");
+            var lastElement = nodes[nodes.length - 1];
+            lastElement.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+
+
+            var originalColor = getComputedStyle(lastElement).backgroundColor; // Store original color (red)
+
+            $jqueryElement = $(lastElement);
+
+            $jqueryElement.css({ "background-color": "#fff596", "transition": "background-color 0.5s ease" });
+
+            setTimeout(function () {
+                $jqueryElement.css("background-color", originalColor);
+            }, 1500);
+
+
+
+        }
+
+        function addChildrenComment(ele,isFirst) {
+            var $button = $(ele);
+            $idOfParentId = $button.val();
+            $contentOfComment = $('#addCommentFor-' + $idOfParentId).val();
+            $isSpam = false;
+
+            $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $contentOfComment},
+                success: function (response)
+                {
+                    console.log(response);
+                    if (response == true)
+                        $isSpam = true;
+                },
+            });
+
+            if ($isSpam) {
+                $('#modalSpamWarning').modal();
+                return;
+            }
+
+
+            if ($.trim($contentOfComment))
+            {
+                $.ajax({
+                    url: '@Url.Action("AddChildCommentPost", "Comment")',
+                    data: { idOfParentId: $idOfParentId, content: $contentOfComment },
+                    success: function (response)
+                    {
+                        if (isFirst) {
+                            $('#commentDiv-' + $idOfParentId).parent().replaceWith(response);
+                        }
+                        else {
+                            $('#commentDiv-' + $idOfParentId).replaceWith(response);
+                        }
+
+                        scrollToElementComment($idOfParentId);
+                    }
+                });
+            }
+
+
+
+        }
+
+        function likePost(ele)
+        {
+            var $button = $(ele);
+            $id = $button.val();
+            $.ajax({
+                type: "GET",
+                url: "/Post/LikePost",
+                data: { postId: $id},
+                success: function (response)
+                {
+                    if (response != null)
+                    {
+                        $('#likes-of-' + $id).text(response.amount);
+                        if (response.isNewPost)
+                        {
+                            $button.find("img").removeAttr('hidden');
+                        }
+                        else
+                        {
+                            $button.find("img").attr("hidden", true);
+                        }
+                    }
+
+                },
+            });
+
+        }
+
+        function unlikePost(ele)
+        {
+            var $button = $(ele);
+            $id = $button.val();
+            $.ajax({
+                type: "GET",
+                url: "/Post/UnlikePost",
+                data: { postId: $id },
+                success: function (response)
+                {
+
+                    if (response != null)
+                    {
+                        $('#unlikes-of-' + $id).text(response.amount);
+                        if (response.isNewPost)
+                        {
+                            $button.find("img").removeAttr('hidden');
+                        }
+                        else
+                        {
+                            $button.find("img").attr("hidden", true);
+                        }
+                    }
+                },
+            });
+        }
+
+
+        function likedComment(ele) {
+            var $button = $(ele);
+            $id = $button.attr('id');
+
+            $commentId = $id.split("-")[1];
+
+            $.ajax({
+                type: "GET",
+                 url: '@Url.Action("LikePostComment", "Comment")',
+                data: { commentId: $commentId },
+                success: function (response)
+                {
+                    $('#comment-likes-of-' + $commentId).text(response.amount);
+                    if (response.isNewComment) {
+                        $('#comment-likes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("LikedComment.svg")");
+                    }
+                    else {
+                        $('#comment-likes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("like.svg")");
+                    }
+                },
+            });
+        }
+
+        function unLikedComment(ele) {
+            var $button = $(ele);
+            $id = $button.attr('id');
+
+            $commentId = $id.split("-")[1];
+
+            $.ajax({
+                type: "GET",
+                 url: '@Url.Action("UnLikePostComment", "Comment")',
+                data: { commentId: $commentId },
+                success: function (response) {
+                    $('#comment-unlikes-of-' + $commentId).text(response.amount);
+
+
+                    if (response.isNewComment) {
+                        $('#comment-unlikes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("unlikeComment.svg")");
+                    }
+                    else {
+                        $('#comment-unlikes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("dislike.svg")");
+                    }
+                },
+            });
+        }
+
+    </script>
+}
+

@@ -1,0 +1,62 @@
+﻿@model  Thesis.ViewModels.PostCategoryViewModel
+
+@{
+    ViewBag.Title = "AddPost";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <h2>Dodaj post </h2>
+            <p class="text-danger"> [Uwaga w przypadku braku wprowadzenia zdjęcia zostanie wygenerowany proceduralny obrazek takowy obrazek zostanie wygenerowany tylko raz później będzie można wprowadzić tylko własny obrazek]</p>
+            <p class="text-danger"> [Po kliknięciu przycisku "Dodaj" nastąpi sprawdzenie czy dany tekst jest spamem więc prosi się o odczekanie chwili. Dodatkowo prosi się o nie wprowadzenie tytułu typu "Nowe leki" lub "Uwaga wygrałeś! W celu zgarnięcia nagrody udaj się pod link"]</p>
+        </div>
+        @Html.Partial("_PostData", new ViewDataDictionary(ViewData) { { "NewBook", true } })
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <script>
+        function realUrl(input) {
+            $('#upload-file-info').html(input.files[0].name);
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    console.log(e.target.result);
+                    $('#userNewImage').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $('#myform').on('submit', function (e)
+        {
+            $titleOfPost = $('#Post_Title').val();
+            $isSpam = false;
+
+            $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $titleOfPost},
+                success: function (response)
+                {
+                    if (response == true)
+                        $isSpam = true;
+                },
+            });
+
+            if ($isSpam == true)
+            {
+                $('#modal').modal();
+                e.preventDefault();
+            }
+        });
+
+    </script>
+}
+
+
+

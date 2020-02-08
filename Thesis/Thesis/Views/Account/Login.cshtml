@@ -1,0 +1,62 @@
+﻿@model Thesis.ViewModels.LoginViewModel
+
+@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_LayoutAccount.cshtml";
+}
+<div id="content-wrapper">
+    <div class="container-fluid">
+        <h3>Panel Logowanie</h3>
+        <div class="row justify-content-center align-items-center" style="height:100vh">
+            <div class="col-lg-4 col-md-8 col-sm-12">
+                <div class="card" style="border: none;">
+                    <div class="card-body">
+                        @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.returnUrl }, FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group  text-danger">
+                                @Html.ValidationMessage("loginerror", "")
+                                @Html.ValidationSummary()
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(o => o.Email, "E-mail:")
+                                @Html.TextBoxFor(o => o.Email, new { @class = "form-control", placeholder = "Wprowadź email", required = "required" })
+                                @Html.ValidationMessageFor(o => o.Email, null, new { @class = "form-text  text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(o => o.Password, "Hasło:")
+                                @Html.PasswordFor(o => o.Password, new { @class = "form-control", placeholder = "Wprowadź hasło", required = "required" })
+                                @Html.ValidationMessageFor(o => o.Password, null, new { @class = "form-text  text-danger" })
+                            </div>
+
+                            <div class="form-check">
+                                @Html.CheckBoxFor(m => m.RememberMe, new { @checked = "checked", @class = "form-check-input" })
+                                @Html.LabelFor(m => m.RememberMe)
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-block">Zaloguj</button>
+                            </div>
+                        }
+
+                        <div style="text-align: center;">
+                            <a href="@Url.Action("Register")">Nie mam jeszcze konta</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+

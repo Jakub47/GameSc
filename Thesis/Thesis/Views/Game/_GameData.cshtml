@@ -1,0 +1,138 @@
+﻿@model Thesis.ViewModels.GameCategoryViewModel
+@using Thesis.Infrastructure;
+
+@using (@Html.BeginForm("SaveGame", "Game", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    if (ViewData.ContainsKey("NewBook"))
+    {
+        <input type="hidden" name="newItem" value="New Book" />
+    }
+
+    @Html.AntiForgeryToken()
+
+    <div class="form-group text-danger">
+        @Html.ValidationSummary()
+    </div>
+
+    @Html.HiddenFor(o => o.Game.GameId)
+    @Html.HiddenFor(o => o.Game.MainPicture)
+
+
+    <div class="form-row">
+        <div class="col-lg-4 mb-3">
+            @Html.LabelFor(o => o.Game.Title, "Nazwa:")
+            @Html.TextBoxFor(o => o.Game.Title, new { @class = "form-control" })
+            @Html.ValidationMessageFor(o => o.Game.Title, null, new { @class = "form-text text-danger" })
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            @Html.LabelFor(o => o.Game.Publisher, "Wydawca:")
+            @Html.TextBoxFor(o => o.Game.Publisher, new { @class = "form-control" })
+            @Html.ValidationMessageFor(o => o.Game.Publisher, null, new { @class = "form-text text-danger" })
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            @Html.LabelFor(o => o.GameCategories, "Gatunek:")<br />
+            @Html.DropDownListFor(m => m.Game.CategoryGameId, new SelectList(Model.GameCategories, "CategoryGameId", "Name", Model.GameCategories.First().CategoryGameId), new { @class = "form-control" })
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-lg-12 mb-3">
+            @Html.LabelFor(o => o.Game.ShortDescription, "Opis skrócony:")
+            @Html.TextBoxFor(o => o.Game.ShortDescription, new { @class = "form-control" })
+            @Html.ValidationMessageFor(o => o.Game.ShortDescription, null, new { @class = "form-text text-danger" })
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-lg-12 mb-3">
+            @Html.LabelFor(o => o.Game.Description, "Opis:")
+            @Html.TextAreaFor(o => o.Game.Description, new { @class = "form-control", rows = "2" })
+            @Html.ValidationMessageFor(o => o.Game.Description, null, new { @class = "form-text text-danger" })
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="col-lg-12 mb-3">
+            @Html.LabelFor(o => o.Game.GamesForExchange, "Gry do wymiany (proszę o odzielenie gier znakiem , lub | ):")
+            @Html.TextBoxFor(o => o.Game.GamesForExchange, new { @class = "form-control" })
+            @Html.ValidationMessageFor(o => o.Game.GamesForExchange, null, new { @class = "form-text text-danger" })
+        </div>
+    </div>
+
+    <div class="form-row">
+        @if (Model.Game.MainPicture != null)
+        {
+            <div class="col-lg-6 mb-3">
+                <div class="col-12">
+                    <div class="col-12">
+                        <label class="btn btn-primary btn-block" for="my-file-selector">
+                            <input id="my-file-selector" name="file" type="file" style="display:none"
+                                   onchange="realUrl(this)">
+                            Wybierz zdjęcie
+                        </label>
+                    </div>
+                    <div class="col-12 text-center">
+                        <span class='label label-info font-weight-bold' id="upload-file-info"></span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-12">Nowy obrazek</div>
+                    <div class="col-12">
+                        <img id="userNewImage" src="@Url.ImagesOtherPath("mNnZ.png")" class="img-fluid" alt="your image" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-3">
+                <div class="col-12 text-center">
+                    <p>
+                        Obecny obrazek
+                    </p>
+                </div>
+                <div class="col-12 text-center">
+                    <img class="img-fluid" src="@Url.ImagesGamePath(Model.Game.MainPicture)" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-lg-12 mb-3">
+                <div class="col-12">
+                    <div class="col-12">
+                        <label class="btn btn-primary btn-block" for="my-file-selector">
+                            <input id="my-file-selector" name="file" type="file" style="display:none"
+                                   onchange="realUrl(this)">
+                            Wybierz zdjęcie
+                        </label>
+                    </div>
+                    <div class="col-12 text-center">
+                        <span class='label label-info font-weight-bold' id="upload-file-info"></span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-12 mt-2 mb-2">Nowy obrazek</div>
+                    <div class="col-12 text-center">
+                        <img id="userNewImage" src="@Url.ImagesOtherPath("mNTZ.png")" class="img-fluid" alt="Twoje zdjęcie" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">Dodaj</button>
+}
+
+<script>
+    function realUrl(input) {
+        $('#upload-file-info').html(input.files[0].name);
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                console.log(e.target.result);
+                $('#userNewImage').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>

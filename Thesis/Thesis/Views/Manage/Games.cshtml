@@ -1,0 +1,103 @@
+﻿@model List<Thesis.Models.Game>
+@using Thesis.Infrastructure
+@{
+    ViewBag.Title = "Games";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        <div id="successAlert" class="alert alert-success" style="display:none">
+            <strong>Poprawnie usunięto grę!</strong>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-4">
+                <a class="btn btn-block btn-primary btn-lg" href="@Url.Action("AddGame","Game")">
+                    Dodaj gre <img src="@Url.ImagesOtherPath("addGame.svg")" class="img-fluid" />
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Tytuł</th>
+                        <th scope="col">Wydawca</th>
+                        <th scope="col">Opis skrócony</th>
+                        <th scope="col">Kategoria</th>
+                        <th scope="col">Obrazek</th>
+                        <th scope="col">Gry na wymiane</th>
+                        <th scope="col">Akcje</th>
+                        @*<th scope="col">Wymiana za</th>
+                        <th scope="col">Wymiana dla</th>*@
+                    </tr>
+                </thead>
+                @{ int i = 0; }
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var game in Model)
+                        {
+                            i++;
+                            <tr id="Row-@game.GameId">
+                                <th scope="row">@i</th>
+                                <td>@game.Title</td>
+                                <td>@game.Publisher</td>
+                                <td>@game.ShortDescription</td>
+                                <td>@game.Category.Name</td>
+                                <td>
+                                    <img class="img img-fluid" width="128" src="@Url.ImagesGamePath(game.MainPicture)" alt="">
+                                </td>
+                                <td>
+                                    @if (game.GamesForExchange != null)
+                                    {
+                                        foreach (string Exchangegame in game.GamesForExchange.Split('|'))
+                                        {
+                                            <text>-</text> @Exchangegame <br />
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    <a class="nav-link btn btn-warning" href="@Url.Action("EditGame","Game",new { id = game.GameId })">Edytuj</a>
+                                    <button class="btn btn-danger btn-block" value="@game.GameId" onclick="deleteGame(this)">Usuń</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" style="text-align:center;">Brak wyników</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        function deleteGame(ele)
+        {
+            var $button = $(ele);
+            $id = $button.val();
+            
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("DeleteGame", "Game")",
+                data: { id: $id},
+                success: function (response)
+                {
+                    $('#Row-' + $id).remove();
+                    $('#successAlert').fadeIn('slow', function () {
+                        $('#successAlert').delay(3000).fadeOut();
+                    });
+                },
+            });
+        }
+    </script>    
+}

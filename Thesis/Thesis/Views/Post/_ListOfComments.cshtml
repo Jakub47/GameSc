@@ -1,0 +1,83 @@
+﻿@model Thesis.ViewModels.CurrentPostUserViewModel
+@using Thesis.Infrastructure
+
+<ul class="list-unstyled  collapse" id="collapseExample-@Model.Post.PostId">
+    @if (Model.Post.Comments.Count > 0)
+    {
+        foreach (var com in Model.Post.Comments.Where(a => a.ParentCommentPostId == null))
+        {
+             if(Model.Post.Comments.Last() == com)
+             {
+                 <span id="lastElement"></span>
+             }
+            <li class="media mt-2" id="li-@com.CommentPostId">
+                @if (com.User.MainPicture != null)
+                {
+                    <img src="@Url.ImagesUserPath(com.User.MainPicture)" width="32" class="mr-3 img-fluid rounded">
+                }
+                else
+                {
+                    <img src="@Url.ImagesUserPath("user.png")" class="mr-3 img-fluid">
+                }
+                    <div id="commentDiv-@com.CommentPostId" class="media-body">
+                        <h6 class="mt-0">@com.User.UserName</h6>
+                        <strong>@com.DateOfInsert</strong>
+                        @if (com.IsHappy)
+                        {
+                            <img src="@Url.ImagesOtherPath("isHappy.svg")" />
+                        }
+                        <p>
+                            @com.Body <br />
+                            <span @if (User.Identity.IsAuthenticated) { <text> onclick="likedComment(this)" id="likeComment-@com.CommentPostId" value="@com.CommentPostId" class="commentLike" </text> }>
+                                @if (Model.LoggedUser != null && Model.LoggedUser.LikedCommentsPosts.Contains(com))
+                                {
+                                    <img src="@Url.ImagesOtherPath("LikedComment.svg")" /> <strong id="comment-likes-of-@com.CommentPostId">@com.Likes</strong>
+                                }
+                                else
+                                {
+                                    <img src="@Url.ImagesOtherPath("like.svg")" /> <strong id="comment-likes-of-@com.CommentPostId">@com.Likes</strong>
+                                }
+                            </span>
+                            <span @if (User.Identity.IsAuthenticated) { <text> onclick="unLikedComment(this)" id="unLikeComment-@com.CommentPostId" value="@com.CommentPostId" class="commentUnLike" </text> }>
+                                @if (Model.LoggedUser != null && Model.LoggedUser.UnlikeCommentPosts.Contains(com))
+                                {
+                                    <img src="@Url.ImagesOtherPath("unlikeComment.svg")" /> <strong id="comment-unlikes-of-@com.CommentPostId"> @com.UnLikes</strong>
+                                }
+                                else
+                                {
+                                    <img src="@Url.ImagesOtherPath("dislike.svg")" /> <strong id="comment-unlikes-of-@com.CommentPostId"> @com.UnLikes</strong>
+                                }
+                            </span>
+
+                            <div class="row">
+                                <div class="input-group mb-2">
+                                    <div class="col-12 col-lg-10">
+                                        <textarea id="addCommentFor-@com.CommentPostId" class="form-control" placeholder="Twój komentarz"></textarea>
+                                    </div>
+                                    <div class="col-12 col-lg-2">
+                                        <button value="@com.CommentPostId" onclick="addChildrenComment(this,true)" class="btn btn-primary btn-block">Dodaj komentarz</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </p>
+                        @if (com.Children != null && com.Children.Count > 0)
+                        {
+                            foreach (var childCom in com.Children)
+                            {
+                                @Html.Action("ChildrenPostComment", "Post", new { childCom })
+                            }
+                        }
+
+                    </div>
+            </li>
+        }
+    }
+    else
+    {
+        <li class="media">
+            <div id="media-body-" class="media-body">
+                Brak komentarzy!
+            </div>
+        </li>
+    }
+</ul>

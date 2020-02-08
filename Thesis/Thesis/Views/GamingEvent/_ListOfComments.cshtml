@@ -1,0 +1,86 @@
+﻿@model Thesis.ViewModels.CurrentGameEventUserViewModel
+@using Thesis.Infrastructure
+
+<ul class="list-unstyled  collapse" id="collapseComments-@Model.GamingEvent.GamingEventId">
+    @if (Model.GamingEvent.Comments.Count > 0)
+    {
+        <strong>Komentarze</strong>
+        <hr/>
+        foreach (var com in Model.GamingEvent.Comments.Where(a => a.ParentCommentEventId == null))
+        {
+            if (Model.GamingEvent.Comments.Last() == com)
+            {
+                <span id="lastElement"></span>
+            }
+
+            <li class="media mt-2">
+                @if (com.User.MainPicture != null)
+                {
+                    <img src="@Url.ImagesUserPath(com.User.MainPicture)" width="32" class="mr-3 img-fluid rounded">
+                }
+                else
+                {
+                    <img src="@Url.ImagesUserPath("user.png")" class="mr-3 img-fluid">
+                }
+                <div id="commentDiv-@com.CommentEventId" class="media-body">
+                    <h6 class="mt-0">@com.User.UserName</h6>
+                    <strong>@com.DateOfInsert</strong>
+                    @if (com.IsHappy)
+                    {
+                        <img src="@Url.ImagesOtherPath("isHappy.svg")" />
+                    }
+                    <p>
+                        @com.Body <br />
+                        <span @if (User.Identity.IsAuthenticated) { <text> onclick="likedComment(this)" id="likeComment-@com.CommentEventId" value="@com.CommentEventId" class="commentLike" </text> }>
+                            @if (Model.LoggedUser != null && Model.LoggedUser.LikedCommentsEvents.Contains(com))
+                            {
+                                <img src="@Url.ImagesOtherPath("LikedComment.svg")" /> <strong id="comment-likes-of-@com.CommentEventId">@com.Likes</strong>
+                            }
+                            else
+                            {
+                                <img src="@Url.ImagesOtherPath("like.svg")" /> <strong id="comment-likes-of-@com.CommentEventId">@com.Likes</strong>
+                            }
+                        </span>
+                        <span @if (User.Identity.IsAuthenticated) { <text> onclick="unLikedComment(this)" id="unLikeComment-@com.CommentEventId" value="@com.CommentEventId" class="commentUnLike" </text> }>
+                            @if (Model.LoggedUser != null && Model.LoggedUser.UnlikeCommentEvents.Contains(com))
+                            {
+                                <img src="@Url.ImagesOtherPath("unlikeComment.svg")" /> <strong id="comment-unlikes-of-@com.CommentEventId"> @com.UnLikes</strong>
+                            }
+                            else
+                            {
+                                <img src="@Url.ImagesOtherPath("dislike.svg")" /> <strong id="comment-unlikes-of-@com.CommentEventId"> @com.UnLikes</strong>
+                            }
+                        </span>
+
+                        <div class="row">
+                            <div class="input-group mb-2">
+                                <div class="col-12 col-lg-9">
+                                    <textarea id="addCommentFor-@com.CommentEventId" class="form-control" placeholder="Twój komentarz" rows="1"></textarea>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <button value="@com.CommentEventId" onclick="addChildrenComment(this,true)" class="btn btn-primary btn-block">Dodaj komentarz</button>
+                                </div>
+                            </div>
+                        </div>
+                    </p>
+                    @if (com.Children != null && com.Children.Count > 0)
+                    {
+                        foreach (var childCom in com.Children)
+                        {
+                            @Html.Action("ChildrenEventComment", "GamingEvent", new { childCom })
+                        }
+                    }
+
+                </div>
+            </li>
+        }
+    }
+    else
+    {
+        <li class="media">
+            <div id="media-body-" class="media-body">
+                Brak komentarzy!
+            </div>
+        </li>
+    }
+</ul>

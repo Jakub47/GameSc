@@ -1,0 +1,53 @@
+﻿@model Thesis.ViewModels.EventCategoryViewModel
+
+@{
+    ViewBag.Title = "AddEvent";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+@using (@Html.BeginForm("AddEvent", "Manage", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group text-danger">
+        @Html.ValidationSummary()
+    </div>
+
+    @Html.HiddenFor(o => o.GamingEvent.GamingEventId)
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.GamingEvent.Title, "Nazwa:")
+        @Html.TextBoxFor(o => o.GamingEvent.Title, new { @class = "form-control" })
+        @Html.ValidationMessageFor(o => o.GamingEvent.Title, null, new { @class = "form-text text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.GamingEvent.Content, "Opis:")
+        @Html.TextAreaFor(o => o.GamingEvent.Content, new { @class = "form-control", rows = "2" })
+        @Html.ValidationMessageFor(o => o.GamingEvent.Content, null, new { @class = "form-text text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.GamingEvent.DateOfEvent, "Data wydarzenia:")
+        @Html.TextBoxFor(o => o.GamingEvent.DateOfEvent, new { @class = "form-control" })
+        @Html.ValidationMessageFor(o => o.GamingEvent.DateOfEvent, null, new { @class = "form-text text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.EventCategory, "Gatunek:")
+        @Html.DropDownListFor(m => m.GamingEvent.CategoryEventId, new SelectList(Model.EventCategory, "CategoryEventId", "Name", Model.EventCategory.First().CategoryEventId))
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.GamingEvent.MaxNumberOfPeople, "Maksymalna ilość osób:")
+        @Html.TextBoxFor(o => o.GamingEvent.MaxNumberOfPeople, new { @class = "form-control" })
+        @Html.ValidationMessageFor(o => o.GamingEvent.MaxNumberOfPeople, null, new { @class = "form-text text-danger" })
+    </div>
+
+
+    <div class="form-group">
+        <input type="file" name="file" class="form-control-file" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Dodaj</button>
+}

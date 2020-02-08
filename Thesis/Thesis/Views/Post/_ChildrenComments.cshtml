@@ -1,0 +1,71 @@
+﻿@model Thesis.ViewModels.CurrentCommentPostViewModel
+@using Thesis.Infrastructure
+
+
+
+<div class="media mt-3" id="commentDiv-@Model.Com.CommentPostId">
+    @if (Model.Com.User.MainPicture != null)
+    {
+        <img src="@Url.ImagesUserPath(Model.Com.User.MainPicture)" width="32" class="mr-3 img-fluid rounded">
+    }
+    else
+    {
+        <img src="@Url.ImagesUserPath("user.png")" class="mr-3 img-fluid">
+    }
+    <div class="media-body">
+        <h6 class="mt-0">@Model.Com.User.UserName</h6>
+        <strong>@Model.Com.DateOfInsert</strong>
+        @if (Model.Com.IsHappy)
+        {
+            <img src="@Url.ImagesOtherPath("isHappy.svg")" />
+        }
+        <p>
+            @Model.Com.Body <br />
+            <span @if (User.Identity.IsAuthenticated) { <text> onclick="likedComment(this)" id="likeComment-@Model.Com.CommentPostId" value="@Model.Com.CommentPostId" class="commentLike" </text> }>
+                @if (Model.LoggedUser != null && Model.LoggedUser.LikedCommentsPosts.Contains(Model.Com))
+                {
+                    <img src="@Url.ImagesOtherPath("LikedComment.svg")" /> <strong id="comment-likes-of-@Model.Com.CommentPostId">@Model.Com.Likes</strong>
+                }
+                else
+                {
+                    <img src="@Url.ImagesOtherPath("like.svg")" /> <strong id="comment-likes-of-@Model.Com.CommentPostId">@Model.Com.Likes</strong>
+                }
+            </span>
+            <span @if (User.Identity.IsAuthenticated) { <text> onclick="unLikedComment(this)" id="unLikeComment-@Model.Com.CommentPostId" value="@Model.Com.CommentPostId" class="commentUnLike" </text> }>
+                @if (Model.LoggedUser != null && Model.LoggedUser.UnlikeCommentPosts.Contains(Model.Com))
+                {
+                    <img src="@Url.ImagesOtherPath("unlikeComment.svg")" /> <strong id="comment-unlikes-of-@Model.Com.CommentPostId"> @Model.Com.UnLikes</strong>
+                }
+                else
+                {
+                    <img src="@Url.ImagesOtherPath("dislike.svg")" /> <strong id="comment-unlikes-of-@Model.Com.CommentPostId"> @Model.Com.UnLikes</strong>
+                }
+            </span>
+
+            <div class="row">
+                <div class="input-group mb-2">
+                    <div class="col-12 col-lg-10">
+                        <textarea id="addCommentFor-@Model.Com.CommentPostId" class="form-control" placeholder="Twój komentarz"></textarea>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <button value="@Model.Com.CommentPostId" onclick="addChildrenComment(this,false)" class="btn btn-primary btn-block">Dodaj komentarz</button>
+                    </div>
+                </div>
+            </div>
+        </p>
+
+        @if (Model.Com.Children != null && Model.Com.Children.Count > 0)
+        {
+            foreach (var childCom in Model.Com.Children)
+            {
+                @Html.Action("ChildrenPostComment", "Post", new { childCom })
+            }
+        }
+
+
+
+    </div>
+
+
+
+</div>

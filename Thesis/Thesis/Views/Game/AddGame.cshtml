@@ -1,0 +1,19 @@
+﻿@model  Thesis.ViewModels.GameCategoryViewModel
+
+@{
+    ViewBag.Title = "AddGame";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <h2>Dodaj grę </h2>
+            <p> [Uwaga w przypadku braku wprowadzenia zdjęcia zostanie wygenerowany proceduralny obrazek takowy obrazek zostanie wygenerowany tylko raz później będzie można wprowadzić tylko własny obrazek]</p>
+        </div>
+        @Html.Partial("_GameData", new ViewDataDictionary(ViewData) { { "NewBook", true } })
+    </div>
+</div>
+
+
+

@@ -1,0 +1,62 @@
+﻿@model IEnumerable<Thesis.Models.Game>
+@using Thesis.Infrastructure
+
+<div class="row">
+    @foreach (var element in Model)
+    {
+        <div class="col-lg-3 col-md-6 mb-4 mt-lg-5">
+            <div class="card h-100 border-dark">
+                <img class="card-img-top" src="@Url.ImagesGamePath(element.MainPicture)" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a style="text-decoration: none; color: dimgrey" href="@Url.Action("Detail","Game", new { id = element.GameId})">
+                            @element.Title
+                        </a>
+                    </h5>
+                    <p class="card-text">@element.ShortDescription</p>
+                    <div class="row align-items-center">
+                        @if (element.User != null)
+                        {
+                            if (element.User.MainPicture != null)
+                            {
+                                <div class="col-4">
+                                    <img src="@Url.ImagesUserPath(element.User.MainPicture)" width="64" class="mr-3 img-fluid">
+                                </div>
+                                <div class="col-8">
+                                    <small>@element.User.UserName</small>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-4">
+                                    <img src="@Url.ImagesUserPath("user.png")" class="mr-3 img-fluid">
+                                </div>
+                                <div class="col-8">
+                                    <small>@element.User.UserName</small>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                @if (element.IsInObserver)
+                {
+                    <a  href="@Url.Action("Index","Observe")"  class="btn btn-dark">
+                        <div class="card-footer d-flex justify-content-center">
+                            Przejdź do listy obserwowanych
+                        </div>
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("AddToObserve","Observe", new { id = element.GameId})" class="btn btn-dark">
+                        <div class="card-footer d-flex justify-content-center">
+                            Dodaj Do Obserwowanych
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+

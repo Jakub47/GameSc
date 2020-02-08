@@ -1,0 +1,136 @@
+﻿@using Thesis.Infrastructure
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    @System.Web.Optimization.Styles.Render("~/Content/themes/base/css")
+</head>
+
+<body id="page-top">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand"  href="@Url.Action("Index","Post")">Projekt</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index","Post")">Posty</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index","Game")">Gry</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index","GamingEvent")">Wydarzenie</a>
+                </li>
+                <li class="nav-item">
+                    <text class="nav-link"> <img src="@Url.ImagesOtherPath("isHappy.svg")" />-dobry nastrój komentarze</text>
+                </li>
+            </ul>
+
+            @using (Html.BeginForm("Search", "Game", FormMethod.Get, new { id = "search-form", @class = "form-inline my-2 my-lg-0" }))
+            {
+                <input id="search-filter" name="game" class="form-control mr-sm-2" data-autocomplete-source="@Url.Action("ItemPrompt","Home")" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            }
+            <ul class="navbar-nav ml-auto ml-md-0">
+                <li class="nav-item" style="color: white;">
+                    <a class="nav-link" href="@Url.Action("Index","Observe")">
+                        Obserwowane(<span id="observe-header-amount-elements">@Html.Action("GetAmountOfElementsInObserver", "Observe")</span>)
+                    </a>
+                </li>
+
+                <li class="nav-item dropdown no-arrow">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            string c = Html.Raw(Html.Action("GetMainImageOfLoggedUSer", "Account")).ToString();
+                            if (c != null && c != string.Empty)
+                            {
+                                string newMessages = Html.Action("NewMessages", "Message").ToString();
+                                if (newMessages != "0")
+                                {
+                                    <span class="badge badge-danger ml-4">@newMessages</span>
+                                }
+                                <img class="img-fluid rounded" width="28" src="@Url.ImagesUserPath(Html.Raw(Html.Action("GetMainImageOfLoggedUSer", "Account")).ToString())" />
+                            }
+                            else
+                            {
+                                string newMessages = Html.Action("NewMessages", "Message").ToString();
+                                if (newMessages != "0")
+                                {
+                                    <span class="badge badge-danger">@newMessages</span>
+                                }
+                                <i class="fas fa-user-circle"></i>
+                            }
+                        }
+                        else
+                        {
+                            string newMessages = Html.Action("NewMessages", "Message").ToString();
+                            if (newMessages != "0")
+                            {
+                                <span class="badge badge-danger">@newMessages</span>
+                            }
+                            <i class="fas fa-user-circle"></i>
+                        }
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                        @Html.Partial("_LoginPartial")
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="wrapper">
+        @RenderBody()
+    </div>
+
+    @System.Web.Optimization.Scripts.Render("~/bundles/jqueryAndjqueryUIAndFilesForWebsite")
+
+    <script>
+        $(function () {
+            var setupAutoComplete = function () {
+                var $input = $(this);
+                var options =
+                {
+                    source: $input.attr("data-autocomplete-source"),
+                    select: function (event, ui) {
+                        $input = $(this);
+                        $input.val(ui.item.label);
+                        var $form = $input.parents("form:first");
+                        $form.submit();
+                    }
+                };
+                $input.autocomplete(options);
+            };
+            var ajaxSubmit = function () {
+                var $form = $(this);
+                var settings = {
+                    data: $(this).serialize(),
+                    url: $(this).attr("action"),
+                    type: $(this).attr("method")
+                };
+                $.ajax(settings).done(function (result) {
+                    var $targetElement = $($form.data("ajax-target"));
+                    var $newContent = $(result);
+                    $($targetElement).replaceWith($newContent);
+                    $newContent.effect("slide");
+                });
+
+            };
+            $("#search-filter").each(setupAutoComplete);
+            $("#search-form").submit(ajaxSubmit);
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,15 @@
+﻿@model IEnumerable<Thesis.Models.Game>
+@{
+    ViewBag.Title = "Index";
+}
+
+@Html.Action("MenuCategoryGames")
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        @Html.Partial("_ListOfGames")
+    </div>
+</div>
+
+
+

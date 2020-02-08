@@ -1,0 +1,292 @@
+﻿@model Thesis.ViewModels.GameEventViewModel
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "Index";
+}
+
+@Html.Action("MenuCategoryEvents")
+
+<div id="content-wrapper">
+    <div class="container-fluid">
+        @Html.Partial("_ListOfEvents")
+    </div>
+</div>
+
+<div id="modalSpamWarning" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Wykryty Spam</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Przykro nam, ale ten tekst jest podejrzany o bycie spamem proszę wprowadzić inny</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts
+{
+    <script>
+        function addToGameEvent(id)
+        {
+            $gameEventId = id;
+
+            if ($gameEventId != 0)
+            {
+                $.ajax({
+                    contentType: 'application/json; charset=utf-8',
+                url: '@Url.Action("AddUserToGameEvent", "GamingEvent")',
+                    data: { gameEventId: $gameEventId},
+                success: function (result)
+                {
+                    $("#" + $gameEventId).attr("onclick", "removeFromGameEvent(this.id)");
+                    $("#" + $gameEventId).removeClass("btn-success").addClass("btn-danger");
+                    $("#" + $gameEventId).text("Odejdź od wydarzenia");
+
+                    $("#collapseExample-" + $gameEventId).empty();
+                    if (result.length > 0) {
+                        for (i = 0; i < result.length; i++) {
+                            $("#collapseExample-" + $gameEventId).append('<li class="list-group-item">' + result[i].userName + '</li>');
+                        }
+                    }
+                    else {
+                        $("#collapseExample-" + $gameEventId).append('<li class="list-group-item">Brak użytkowników</li>');
+                    }
+                },
+            });
+            }
+        }
+
+        function removeFromGameEvent(id)
+        {
+            $gameEventId = id;
+
+            if ($gameEventId != 0)
+            {
+                $.ajax({
+                    contentType: 'application/json; charset=utf-8',
+                url: '@Url.Action("RemoveUserFromGameEvent", "GamingEvent")',
+                    data: { gameEventId: $gameEventId},
+                success: function (result)
+                {
+                    $("#" + $gameEventId).attr("onclick", "addToGameEvent(this.id)");
+                    $("#" + $gameEventId).removeClass("btn-danger").addClass("btn-success");
+                    $("#" + $gameEventId).text("Dołącz do wydarzenia");
+
+                    $("#collapseExample-" + $gameEventId).empty();
+                    if (result.length > 0) {
+                        for (i = 0; i < result.length; i++) {
+                            $("#collapseExample-" + $gameEventId).append('<li class="list-group-item">' + result[i].userName + '</li>');
+                        }
+                    }
+                    else {
+                        $("#collapseExample-" + $gameEventId).append('<li class="list-group-item">Brak użytkowników</li>');
+                    }
+                },
+            });
+            }
+        }
+
+
+
+        function addComment(id)
+        {
+            $gameEventId = id.split("-")[1];
+            $content = "";
+            $isSpam = false;
+
+
+            if ($.isNumeric($gameEventId)) {
+                $textArea = $('#textArea-addComment-' + $gameEventId);
+                $content = $textArea.val();
+            }
+            else {
+                alert("Błąd");
+            }
+
+             $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $content},
+                success: function (response)
+                {
+                    if (response == true)
+                        $isSpam = true;
+                },
+            });
+
+            if ($isSpam) {
+                $('#modalSpamWarning').modal();
+                return;
+            }
+
+              $.ajax({
+                type: "POST",
+                url: '@Url.Action("AddComment", "GamingEvent")',
+                  data: { gamingEventId: $gameEventId, content: $content},
+                success: function (response)
+                {
+                    $('#collapseComments-' + $gameEventId).replaceWith(response);
+                    $('#collapseComments-' + $gameEventId).collapse('show');
+                    scrollToElement();
+
+                },
+            });
+        }
+
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function scrollToElement() {
+            await sleep(500);
+            var spanElement = document.getElementById("lastElement");
+            spanElement.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+
+
+            var element = spanElement.nextSibling.nextSibling;
+
+            var originalColor = getComputedStyle(element).backgroundColor; // Store original color (red)
+
+            $jqueryElement = $(element);
+
+            $jqueryElement.css({ "background-color": "#fff596", "transition": "background-color 0.5s ease" });
+
+            setTimeout(function () {
+                $jqueryElement.css("background-color", originalColor);
+            }, 3000);
+
+        }
+
+        async function scrollToElementComment(id) {
+            await sleep(500);
+            var spanElement = document.getElementById('commentDiv-' + id);
+            //Tutaj skończyłem
+
+            var nodes = spanElement.querySelectorAll(".media-body");
+            var lastElement = nodes[nodes.length - 1];
+            lastElement.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+
+
+            var originalColor = getComputedStyle(lastElement).backgroundColor; // Store original color (red)
+
+            $jqueryElement = $(lastElement);
+
+            $jqueryElement.css({ "background-color": "#fff596", "transition": "background-color 0.5s ease" });
+
+            setTimeout(function () {
+                $jqueryElement.css("background-color", originalColor);
+            }, 1500);
+
+
+
+        }
+
+
+
+           function likedComment(ele) {
+            var $button = $(ele);
+            $id = $button.attr('id');
+
+            $commentId = $id.split("-")[1];
+
+            $.ajax({
+                type: "GET",
+                 url: '@Url.Action("LikeGameEventComment", "Comment")',
+                data: { commentId: $commentId },
+                success: function (response)
+                {
+                    $('#comment-likes-of-' + $commentId).text(response.amount);
+                    if (response.isNewComment) {
+                        $('#comment-likes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("LikedComment.svg")");
+                    }
+                    else {
+                        $('#comment-likes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("like.svg")");
+                    }
+                },
+            });
+        }
+
+         function addChildrenComment(ele,isFirst) {
+            var $button = $(ele);
+            $idOfParentId = $button.val();
+            $contentOfComment = $('#addCommentFor-' + $idOfParentId).val();
+            
+            if ($.trim($contentOfComment))
+            {
+                $isSpam = false;
+
+                 $.ajax({
+                    async: false,
+                    url: '@Url.Action("IsSpam", "Home")',
+                    data: { text: $content},
+                    success: function (response)
+                    {
+                        if (response == true)
+                            $isSpam = true;
+                    },
+                });
+
+                if ($isSpam) {
+                    $('#modalSpamWarning').modal();
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("AddChildCommentEvent", "Comment")',
+                    data: { idOfParentId: $idOfParentId, content: $contentOfComment },
+                    success: function (response)
+                    {
+                        if (isFirst) {
+                            $('#commentDiv-' + $idOfParentId).parent().replaceWith(response);
+                        }
+                        else {
+                            $('#commentDiv-' + $idOfParentId).replaceWith(response);
+                        }
+
+                        scrollToElementComment($idOfParentId);
+
+                    }
+                });
+            }
+        }
+
+        function unLikedComment(ele) {
+            var $button = $(ele);
+            $id = $button.attr('id');
+
+            $commentId = $id.split("-")[1];
+
+            $.ajax({
+                type: "GET",
+                 url: '@Url.Action("UnLikeGameEventComment", "Comment")',
+                data: { commentId: $commentId },
+                success: function (response) {
+                    $('#comment-unlikes-of-' + $commentId).text(response.amount);
+
+
+                    if (response.isNewComment) {
+                        $('#comment-unlikes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("unlikeComment.svg")");
+                    }
+                    else {
+                        $('#comment-unlikes-of-' + $commentId).closest("span").find("img").attr("src", "@Url.ImagesOtherPath("dislike.svg")");
+                    }
+                },
+            });
+        }
+
+
+    </script>
+}
+
+

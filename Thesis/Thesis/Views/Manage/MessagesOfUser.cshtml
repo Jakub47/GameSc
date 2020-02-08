@@ -1,0 +1,61 @@
+﻿@model List<Thesis.Models.Conversation>
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "MessagesOfUser";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+@section Styles
+{
+    <style>
+        #normalMessage:hover {
+            background-color: #EEEEEE;
+        }
+
+        #newMessage:hover {
+            background-color: #eeb006 !important;
+        }
+
+    </style>    
+}
+
+<div id="content-wrapper">
+    <div class="container">
+
+        <div class="d-flex align-items-center p-3 my-3 text-black-50 bg-purple rounded box-shadow mt-2">
+            <img class="mr-3" src="@Url.ImagesOtherPath("MessageUser.png")" alt="" width="64" height="64">
+            <div class="lh-100">
+                <h6 class="mb-0 lh-100">Twoje wiadomości</h6>
+            </div>
+        </div>
+
+        <div class="my-3 p-3 bg-white rounded box-shadow">
+            <h6 class="border-bottom border-gray pb-2 mb-0">Najnowsze wiadomości</h6>
+            @foreach (var conversation in Model)
+            {
+                var diffrentUser = conversation.Receiver.UserName == User.Identity.Name ? conversation.Sender : conversation.Receiver;
+                bool isNewMessage = (conversation.Receiver.UserName == User.Identity.Name && conversation.ReceiverReceived == false)
+                        || (conversation.Sender.UserName == User.Identity.Name && conversation.SenderReceived == false);
+
+                <a href="@Url.Action("ConversationOfUser","Manage",new { id = conversation.ConversationId })" style="text-decoration: none;">
+                   <div id="@(isNewMessage ? "newMessage" : "normalMessage")" class="media text-muted pt-3 mt-1 @(isNewMessage ? "bg-warning" : "")" onclick="window.location='http://google.com';">
+                        @if (diffrentUser.MainPicture != null)
+                        {
+                            <img src="@Url.ImagesUserPath(diffrentUser.MainPicture)" class="mr-2 rounded" style="width: 32px; height: 32px;">
+                        }
+                        else
+                        {
+                            <img src="@Url.ImagesUserPath("user.png")" class="mr-2 rounded" style="width: 32px; height: 32px;">
+                        }
+
+                        <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                            <strong class="d-block text-gray-dark">@diffrentUser.UserName</strong>
+                            @conversation.Contents.Last().MessageContent
+                        </p>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</div>

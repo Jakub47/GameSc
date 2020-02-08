@@ -1,0 +1,231 @@
+﻿@model Thesis.ViewModels.RegisterViewModel
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "Register";
+    Layout = "~/Views/Shared/_LayoutAccount.cshtml";
+}
+<div id="content-wrapper">
+    <div class="container-fluid">
+        <h3>Panel Rejestracji</h3>
+        <div class="row justify-content-center align-items-center" style="height:100vh">
+            <div class="col-lg-4 col-md-8 col-sm-12">
+                <div class="card" style="border: none;">
+                    <div class="card-body">
+
+                        @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { enctype = "multipart/form-data", @id = "onlyForm" }))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            @Html.HiddenFor(item => item.IsPersonOnImage)
+
+                            <div class="form-group text-danger">
+                                @Html.ValidationMessage("loginerror", "")
+                                @Html.ValidationSummary()
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(o => o.Email, "E-mail:")
+                                @Html.TextBoxFor(o => o.Email, new { @class = "form-control", placeholder = "Wprowadź email", required = "required" })
+                                @Html.ValidationMessageFor(o => o.Email, null, new { @class = "form-text text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                <strong> Hasło powinno się składać z 1 dużej litery 1 cyfry oraz 1 znaku specjalnego</strong> <br/>
+                                @Html.LabelFor(o => o.Password, "Hasło:")
+                                @Html.PasswordFor(o => o.Password, new { @class = "form-control", placeholder = "Wprowadź hasło", required = "required" })
+                                @Html.ValidationMessageFor(o => o.Password, null, new { @class = "form-text  text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(o => o.ConfirmPassword, "Potwierdź Hasło:")
+                                @Html.PasswordFor(o => o.ConfirmPassword, new { @class = "form-control", placeholder = "Wprowadź ponownie hasło", required = "required" })
+                                @Html.ValidationMessageFor(o => o.ConfirmPassword, null, new { @class = "form-text  text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(o => o.NickName, "Nick (uwaga nick raz ustawiony później nie ulega modyfikacji):")
+                                @Html.TextBoxFor(o => o.NickName, new { @class = "form-control", @id = "nickOfUser", placeholder = "Wprowadź nick", required = "required" })
+                                @Html.ValidationMessageFor(o => o.NickName, null, new { @class = "form-text text-danger" })
+                            </div>
+
+                            <div class="text-center">
+                                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal">
+                                    Wegeneruj 90 losów ników
+                                </button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">Generacja nazw</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <label class="">Podaj pierwszą litere nicku</label>
+                                            <select class="form-control" id="firstLetter">
+                                                <option value="a">a</option>
+                                                <option value="b">b</option>
+                                                <option value="c">c</option>
+                                                <option value="d">d</option>
+                                                <option value="e">e</option>
+                                                <option value="f">f</option>
+                                                <option value="g">g</option>
+                                                <option value="h">h</option>
+                                                <option value="i">i</option>
+                                                <option value="j">j</option>
+                                                <option value="k">k</option>
+                                                <option value="l">l</option>
+                                                <option value="m">m</option>
+                                                <option value="n">n</option>
+                                                <option value="o">o</option>
+                                                <option value="p">p</option>
+                                                <option value="q">q</option>
+                                                <option value="r">r</option>
+                                                <option value="s">s</option>
+                                                <option value="t">t</option>
+                                                <option value="u">u</option>
+                                                <option value="v">v</option>
+                                                <option value="w">w</option>
+                                                <option value="x">x</option>
+                                                <option value="y">y</option>
+                                                <option value="z">z</option>
+                                            </select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Zamknij</button>
+                                            <button type="button" class="btn btn-primary" onclick="get90records()" data-dismiss="modal">Utwórz nicki</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Modal -->
+
+                            <div id="p90" class="form-group">
+
+                            </div>
+
+                            <div class="form-group mt-1">
+                                <label class="text-danger">W przypadku braku umieszczenia zdjęcia z osobą zostanie wygenerowany proceduralny obrazek</label>
+                                <strong> Po wprowadzeniu obrazka proszę o odczekanie chwili </strong>
+                                @Html.TextBoxFor(m => m.ImageFile, new { @class = "form-control", type = "file" })
+                                <span id="loadingText" style="display:none;">
+                                    <text>Trwa ładowanie obrazka</text>
+                                    <img src="@Url.ImagesOtherPath("loader.gif")" width="32" height="32" />
+                                </span>
+                                <text id="textSuccess" style="color:green; display:none;">Wykryto osobę</text>
+                                <text id="textFail" style="color:red; display:none;">Nie wykryto osoby</text>
+                                <img id="blah" src="#" class="img-fluid" alt="your image" />
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-block">Zarejestruj się</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts
+{
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/nude.js"></script>
+    <script src="~/Scripts/require.js"></script>
+    <script>
+
+
+
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e)
+                {
+                    console.log(e.target.result);
+                    $('#blah').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function get90records() {
+            var firstLetter = $('#firstLetter').val();
+            $.ajax({
+                    url: '@Url.Action("ReturnProceduralNames", "Account")',
+                    data: { choice: firstLetter},
+                    success: function (response)
+                    {
+                        $('#p90').empty();
+                        for (i = 0; i < response.length; i++)
+                        {
+                            $('#p90').append('<button type="button" onclick="replaceWith(this)" class="btn btn-primary m-2">' + response[i] + '</button>');
+                        }
+                    }
+            });
+        }
+
+        function replaceWith(e)
+        {
+            $e = $(e);
+            console.log($e.text());
+            $('#nickOfUser').val($e.text());
+        }
+
+        const handleImageUpload = event =>
+        {
+            const files = event.target.files;
+            const formData = new FormData();
+            formData.append('myFile', files[0]);
+            var copy = event.target.cloneNode(1);
+            fetch('@Url.Action("ReturmCheckImage", "Image")',
+            {
+                method: 'POST',
+                body: formData
+                })
+                .then(response => response.json())
+                .then(data =>
+                {
+                    $('#blah').attr('src', 'data:image/png;base64,' + data.base64imgage);
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+
+            fetch('@Url.Action("CheckImage", "Image")',
+            {
+                method: 'POST',
+                body: formData
+                })
+                .then(response => response.json())
+                .then(data =>
+                {
+                    if (data.isPerson == 'yes') {
+                        $("#IsPersonOnImage").val("yes");
+                        $('#textSuccess').show();
+                        $('#textFail').hide();
+                    }
+                    else {
+                        $("#IsPersonOnImage").val("no");
+                        $('#textFail').show();
+                        $('#textSuccess').hide();
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+        }
+
+        document.querySelector('#ImageFile').addEventListener('change', event => {
+            handleImageUpload(event)
+        })
+
+    </script>
+}
+
+

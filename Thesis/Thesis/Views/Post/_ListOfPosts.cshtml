@@ -1,0 +1,133 @@
+﻿@model Thesis.ViewModels.PostUserViewModel
+@using Thesis.Infrastructure
+
+<div class="row">
+    @foreach (var element in Model.Posts)
+    {
+        <div class="col-12">
+            <div class="media">
+                <!--When user will be implemented create a ViewModel-->
+                <img src="@Url.ImagesUserPath(element.User.MainPicture)" class="align-self-start mr-3" width="32">
+                <div class="media-body">
+                    <h5 class="mt-0">
+                        @if (element.IsHappy)
+                        {
+                            <img src="@Url.ImagesOtherPath("isHappy.svg")" />
+                        }
+                        @element.Title
+                    </h5>
+                    <img src="@Url.ImagesOtherPath("like.svg")" /> <strong id="likes-of-@element.PostId">@element.Likes</strong>
+                    <img src="@Url.ImagesOtherPath("dislike.svg")" /> <strong id="unlikes-of-@element.PostId"> @element.UnLikes</strong>
+                    <p>
+                        @element.Content
+                    </p>
+
+                    @if (element.MainPicture != string.Empty)
+                    {
+                        <div class="media mt-3">
+                            <div class="media-body">
+                                <!--TODO: Make sure to set those specific values when uploading image from user style="width:1100px; height:300px;"-->
+                                <div class="container d-flex justify-content-center">
+                                    <div class="col-md-8">
+                                        <img class="img-fluid mx-auto d-block" src="@Url.ImagesPostPath(element.MainPicture)" alt="Card image cap">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="col-12 mt-1">
+                        <div class="mt-1 d-flex btn-group col-lg-6 col-md-6 col-xl-4 float-left" role="group">
+                            <button id="button-@element.PostId" class="btn btn btn-outline-secondary showContent" type="button" data-toggle="collapse" data-target="#collapseExample-@element.PostId" aria-expanded="false" aria-controls="collapseExample">
+                                <small>Pokaż/Ukryj komentarze</small>
+                            </button>
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <button class="btn btn btn-outline-secondary ml-2" type="button" data-toggle="modal" data-target="#addComment-@element.PostId">
+                                    <small class="text-sm">Dodaj komentarz</small>
+                                </button>
+                            }
+                        </div>
+
+                        <div class="mt-1 d-flex btn-group col-lg-6 col-md-6 col-xl-4 float-right" role="group">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <button value="@element.PostId" onclick="likePost(this)" class="btn btn btn-outline-secondary" type="button">
+                                    <small>Polub</small>
+
+                                    <img src="@Url.ImagesOtherPath("LikedComment.svg")"
+                                         @if (Model.LoggedUser != null && !(Model.LoggedUser.LikedPosts.Contains(element))) { <text> hidden</text>} />
+                                </button>
+
+                                <button value="@element.PostId" onclick="unlikePost(this)" class="btn btn btn-outline-secondary ml-2" type="button">
+                                    <small>Znielub</small>
+
+                                    <img src="@Url.ImagesOtherPath("unlikeComment.svg")"
+                                         @if (Model.LoggedUser != null && !(Model.LoggedUser.UnLikePosts.Contains(element))) { <text> hidden</text>} />
+                                </button>
+
+                                @*if (Model.LoggedUser != null && !(Model.LoggedUser.LikedPosts.Contains(element)))
+                                    {
+                                        <button value="@element.PostId" onclick="likePost(this)" class="btn btn btn-outline-secondary" type="button">
+                                            <small>Polub</small>
+                                        </button>
+                                    }
+                                    else if (Model.LoggedUser != null && Model.LoggedUser.LikedPosts.Contains(element))
+                                    {
+                                        <button value="@element.PostId" class="btn btn btn-outline-secondary" type="button" disabled>
+                                            <small>Już polubiłeś ten post</small>
+                                        </button>
+                                    }
+
+                                    if (Model.LoggedUser != null && !(Model.LoggedUser.UnLikePosts.Contains(element)))
+                                    {
+                                        <button value="@element.PostId" onclick="unlikePost(this)" class="btn btn btn-outline-secondary ml-2" type="button">
+                                            <small>Znielub</small>
+                                        </button>
+                                    }
+                                    else if (Model.LoggedUser != null && Model.LoggedUser.UnLikePosts.Contains(element))
+                                    {
+                                        <button value="@element.PostId" class="btn btn btn-outline-secondary ml-2" type="button" disabled>
+                                            <small>Już przestałeś lubić ten post</small>
+                                        </button>
+                                    }*@
+                            }
+                            <!-- The Modal -->
+                            <div class="modal" id="addComment-@element.PostId">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+
+                                        <!-- Modal Header -->
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Dodaj komentarz</h4>
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        </div>
+
+                                        <!-- Modal body -->
+                                        <div class="modal-body">
+                                            <small class="">Po wprowadzeniu treści oraz kliknięciu przycisku nastąpi sprawdzenia pod kątem nastroju oraz spamu</small><br/>
+                                            <label>Treść komentarza</label>
+                                            <textarea id="textArea-addComment-@element.PostId" class="form-control"></textarea>
+                                        </div>
+
+                                        <!-- Modal footer -->
+                                        <div class="modal-footer">
+                                            <button type="button" id="@element.PostId" class="btn btn-primary" onclick="addComment(this)" data-dismiss="modal">Dodaj komentarz</button>
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Zamknij okno</button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-12 float-left mt-2">
+                        @Html.Action("ListOfPostComment", "Post", new { element })
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

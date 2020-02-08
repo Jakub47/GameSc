@@ -1,0 +1,54 @@
+﻿@model Thesis.ViewModels.GameCategoryViewModel
+
+@{
+    ViewBag.Title = "AddGame";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+@using (@Html.BeginForm("SaveGame", "Game", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group text-danger">
+        @Html.ValidationSummary()
+    </div>
+
+    @Html.HiddenFor(o => o.Game.GameId)
+    @Html.HiddenFor(o => o.Game.MainPicture)
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.Game.Title, "Nazwa:")
+        @Html.TextBoxFor(o => o.Game.Title, new { @class = "form-control" })
+        @Html.ValidationMessageFor(o => o.Game.Title, null, new { @class = "form-text text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.Game.Description, "Opis:")
+        @Html.TextAreaFor(o => o.Game.Description, new { @class = "form-control", rows = "2" })
+        @Html.ValidationMessageFor(o => o.Game.Description, null, new { @class = "form-text text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.Game.ShortDescription, "Opis skrócony:")
+        @Html.TextBoxFor(o => o.Game.ShortDescription, new { @class = "form-control" })
+        @Html.ValidationMessageFor(o => o.Game.ShortDescription, null, new { @class = "form-text text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.GameCategories, "Gatunek:")
+        @Html.DropDownListFor(m => m.Game.CategoryGameId, new SelectList(Model.GameCategories, "CategoryGameId", "Name", Model.GameCategories.First().CategoryGameId))
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(o => o.Game.Publisher, "Wydawca:")
+        @Html.TextBoxFor(o => o.Game.Publisher, new { @class = "form-control" })
+        @Html.ValidationMessageFor(o => o.Game.Publisher, null, new { @class = "form-text text-danger" })
+    </div>
+
+  
+    <div class="form-group">
+        <input type="file" name="file" class="form-control-file" />
+    </div>
+    <button type="submit" class="btn btn-primary">Dodaj</button>
+
+}

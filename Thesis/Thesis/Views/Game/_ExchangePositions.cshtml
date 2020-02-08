@@ -1,0 +1,19 @@
+﻿@model List<Thesis.Models.Game>
+@using Thesis.Infrastructure
+@using Microsoft.AspNet.Identity;
+
+@foreach (var game in Model)
+{
+    <li class="list-group-item">
+        <img class="card-img-top" src="@Url.ImagesGamePath(game.MainPicture)" />
+        @game.Title
+        @if (User.Identity.IsAuthenticated)
+        {
+            if(User.Identity.GetUserId() == game.UserId)
+            {
+                <button class="btn btn-danger btn-block" onclick="deletePropose(@game.GameId)" id="delete">Usuń swoją gre</button>
+            }
+        }
+    </li>
+}
+

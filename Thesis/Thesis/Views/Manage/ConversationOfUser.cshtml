@@ -1,0 +1,79 @@
+﻿@model Thesis.Models.Conversation
+@using Thesis.Infrastructure
+
+@{
+    ViewBag.Title = "ConversationOfUser";
+    Layout = "~/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div id="content-wrapper">
+    <div id="conainerForMessages" class="container">
+        @Html.Partial("_MessagesList")
+    </div>
+</div>
+
+<div id="modalSpamWarning" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Wykryty Spam</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Przykro nam, ale ten tekst jest podejrzany o bycie spamem proszę wprowadzić inny</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+
+        function sendMessage() {
+            //Take content from textArea
+             $messageContent = $('#contentForMessage').val();
+            if ($messageContent.trim().length > 0) {
+                //remove white spaces from begining and at the end
+                $messageContent = $.trim($messageContent);
+
+                $isSpam = false;
+
+                $.ajax({
+                async: false,
+                url: '@Url.Action("IsSpam", "Home")',
+                data: { text: $messageContent},
+                success: function (response)
+                {
+                    if (response == true)
+                        $isSpam = true;
+                },
+                });
+
+                if ($isSpam) {
+                    $('#modalSpamWarning').modal();
+                    return;
+                }
+
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("SendNewContent", "Manage")',
+                    data: { content: $messageContent, conversationId: '@Model.ConversationId'},
+                    success: function (result)
+                    {
+                        console.log(result);
+                        $('#conainerForMessages').html(result);
+                    },
+                });
+            }
+        }
+
+    </script>
+
+}
+
